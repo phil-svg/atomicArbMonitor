@@ -1,7 +1,7 @@
 import TelegramBot from "node-telegram-bot-api";
 import dotenv from "dotenv";
 import { labels } from "../../Labels.js";
-dotenv.config({ path: ".env" });
+dotenv.config({ path: "../.env" });
 function getTokenURL(tokenAddress) {
     return "https://etherscan.io/token/" + tokenAddress;
 }
@@ -16,20 +16,6 @@ function getTxHashURLfromEigenPhi(txHash) {
 }
 function getBuyerURL(buyerAddress) {
     return "https://etherscan.io/address/" + buyerAddress;
-}
-function getProfitPrint(profit, revenue, cost) {
-    // if (Number(revenue) < Number(cost)) {
-    //   return `Profit: ? | Revenue: ? | Cost: $${formatForPrint(cost)}`;
-    // }
-    if (profit > revenue * 0.5)
-        return `Revenue: ¯⧵_(ツ)_/¯`;
-    return `Profit: $${formatForPrint(profit)} | Revenue: $${formatForPrint(revenue)} | Cost: $${formatForPrint(cost)}`;
-}
-function getMarketHealthPrint(qtyCollat, collateralName, collatValue, marketBorrowedAmount) {
-    collatValue = formatForPrint(collatValue);
-    marketBorrowedAmount = formatForPrint(marketBorrowedAmount);
-    qtyCollat = formatForPrint(qtyCollat);
-    return `Collateral: ${getShortenNumber(qtyCollat)} ${collateralName}${getDollarAddOn(collatValue)} | Borrowed: ${getShortenNumber(marketBorrowedAmount)} crvUSD`;
 }
 function formatForPrint(someNumber) {
     if (typeof someNumber === "string" && someNumber.includes(","))
@@ -178,16 +164,6 @@ Links:${POOL} |${hyperlink(txHashUrl, "etherscan.io")}
 User:${hyperlink(buyerURL, shortenBuyer)} called Contract:${hyperlink(LABEL_URL_ETHERSCAN, labelName)} 🦙🦙🦙
   `;
 }
-/*
-  return `
-  🚀${hyperlink(txHashUrl, txType)} in${POOL}
-
-${transactedCoinInfo}${DOLLAR_ADDON}
-
-${hyperlink(buyerURL, shortenBuyer)} called${hyperlink(LABEL_URL_ETHERSCAN, labelName)}
-
-  `;
-*/
 export async function telegramBotMain(env, eventEmitter) {
     eventEmitter.on("newMessage", (message) => {
         if (groupID) {
