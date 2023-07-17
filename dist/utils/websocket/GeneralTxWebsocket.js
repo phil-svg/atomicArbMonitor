@@ -18,6 +18,10 @@ export async function connectToWebsocket(eventEmitter) {
             if (processedTxIds.has(enrichedTransaction.tx_id)) {
                 return;
             }
+            if (enrichedTransaction.coins_leaving_wallet.length === 0 && enrichedTransaction.coins_entering_wallet.length === 0) {
+                console.log(`No Coins were moved in tx ${enrichedTransaction.tx_hash}`);
+                return;
+            }
             // Add transaction id to the set of processed transactions
             processedTxIds.add(enrichedTransaction.tx_id);
             // console.log("Received new General Tx");
@@ -31,8 +35,7 @@ export async function connectToWebsocket(eventEmitter) {
                 eventEmitter.emit("newMessage", message);
             }
             else {
-                console.dir(enrichedTransaction, { depth: null, colors: true });
-                console.log(`Couldn't price transaction.`);
+                console.log(`Couldn't price transaction ${enrichedTransaction.tx_hash}`);
             }
         });
     });
