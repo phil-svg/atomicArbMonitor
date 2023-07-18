@@ -7,6 +7,8 @@ console.clear();
 const ENV = "prod";
 // const ENV = "test";
 
+export const FILTER_VALUE = 1000000; // minimum $-value to be printed
+
 const eventEmitter = new EventEmitter();
 
 async function main() {

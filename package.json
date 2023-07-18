@@ -7,8 +7,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
-    "start": "node dist/GeneralSwapMonitor.js",
-    "code": "tsc && node dist/GeneralSwapMonitor.js"
+    "start": "cd dist && node GeneralSwapMonitor.js",
+    "code": "tsc && cd dist && node GeneralSwapMonitor.js"
   },
   "author": "phil",
   "license": "MIT",
