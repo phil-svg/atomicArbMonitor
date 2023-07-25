@@ -4,7 +4,7 @@ import { io } from "socket.io-client";
 import { priceTransaction } from "../txValue/PriceTransaction.js";
 import { FILTER_VALUE } from "../../GeneralSwapMonitor.js";
 
-//const url = "http://localhost:443";
+// const url = "http://localhost:443";
 const url = "wss://api.curvemonitor.com";
 
 const processedTxIds = new Set();
@@ -46,6 +46,7 @@ export async function connectToWebsocket(eventEmitter: any) {
     });
 
     mainSocket.on("NewGeneralTx", async (enrichedTransaction: EnrichedTransactionDetail) => {
+      console.log("enrichedTransaction", enrichedTransaction);
       // Check if the transaction has already been processed
       if (processedTxIds.has(enrichedTransaction.tx_id)) {
         return;
@@ -70,8 +71,12 @@ export async function connectToWebsocket(eventEmitter: any) {
 
         // Calculate the value of the transaction and build a message about it
         const value = await priceTransaction(enrichedTransaction);
+        const WHITELISTED_POOL_ADDRESS = "0x4ebdf703948ddcea3b11f675b4d1fba9d2414a14"; // TriCRV (crvUSDETHCRV)
+
         if (value) {
-          if (value < FILTER_VALUE) return;
+          if (value < FILTER_VALUE && enrichedTransaction.poolAddress.toLowerCase() !== WHITELISTED_POOL_ADDRESS) {
+            return;
+          }
           const message = await buildGeneralTransactionMessage(enrichedTransaction, value);
           eventEmitter.emit("newMessage", message);
         } else {

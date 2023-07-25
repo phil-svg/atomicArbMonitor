@@ -2,7 +2,7 @@ import { buildGeneralTransactionMessage } from "../telegram/TelegramBot.js";
 import { io } from "socket.io-client";
 import { priceTransaction } from "../txValue/PriceTransaction.js";
 import { FILTER_VALUE } from "../../GeneralSwapMonitor.js";
-//const url = "http://localhost:443";
+// const url = "http://localhost:443";
 const url = "wss://api.curvemonitor.com";
 const processedTxIds = new Set();
 // Clear the cache every 5 minutes
@@ -37,6 +37,7 @@ export async function connectToWebsocket(eventEmitter) {
             });
         });
         mainSocket.on("NewGeneralTx", async (enrichedTransaction) => {
+            console.log("enrichedTransaction", enrichedTransaction);
             // Check if the transaction has already been processed
             if (processedTxIds.has(enrichedTransaction.tx_id)) {
                 return;
@@ -57,9 +58,11 @@ export async function connectToWebsocket(eventEmitter) {
                 processedTxIds.add(enrichedTransaction.tx_id);
                 // Calculate the value of the transaction and build a message about it
                 const value = await priceTransaction(enrichedTransaction);
+                const WHITELISTED_POOL_ADDRESS = "0x4ebdf703948ddcea3b11f675b4d1fba9d2414a14"; // TriCRV (crvUSDETHCRV)
                 if (value) {
-                    if (value < FILTER_VALUE)
+                    if (value < FILTER_VALUE && enrichedTransaction.poolAddress.toLowerCase() !== WHITELISTED_POOL_ADDRESS) {
                         return;
+                    }
                     const message = await buildGeneralTransactionMessage(enrichedTransaction, value);
                     eventEmitter.emit("newMessage", message);
                 }

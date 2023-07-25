@@ -27,11 +27,8 @@ function getBuyerURL(buyerAddress: string) {
 
 function formatForPrint(someNumber: any) {
   if (typeof someNumber === "string" && someNumber.includes(",")) return someNumber;
-  //someNumber = Math.abs(someNumber);
   if (someNumber > 100) {
     someNumber = Number(Number(someNumber).toFixed(0)).toLocaleString();
-  } else if (someNumber > 5) {
-    someNumber = Number(Number(someNumber).toFixed(2)).toLocaleString();
   } else {
     someNumber = Number(Number(someNumber).toFixed(2)).toLocaleString();
   }
