@@ -3,6 +3,7 @@ import { buildGeneralTransactionMessage } from "../telegram/TelegramBot.js";
 import { io } from "socket.io-client";
 import { priceTransaction } from "../txValue/PriceTransaction.js";
 import { FILTER_VALUE } from "../../GeneralSwapMonitor.js";
+import { crvUSDETHCRV, solverLabels, tricrypto_ng } from "../whitelisting/Whitelist.js";
 
 // const url = "http://localhost:443";
 const url = "wss://api.curvemonitor.com";
@@ -47,14 +48,12 @@ export async function connectToWebsocket(eventEmitter: any) {
 
     mainSocket.on("NewGeneralTx", async (enrichedTransaction: EnrichedTransactionDetail) => {
       console.log("enrichedTransaction", enrichedTransaction);
+
       // Check if the transaction has already been processed
-      if (processedTxIds.has(enrichedTransaction.tx_id)) {
-        return;
-      }
+      if (processedTxIds.has(enrichedTransaction.tx_id)) return;
+
       // Check if transaction is in pending
-      if (pendingTransactions.has(enrichedTransaction.tx_hash)) {
-        return;
-      }
+      if (pendingTransactions.has(enrichedTransaction.tx_hash)) return;
 
       // Start a timer that waits for 5 seconds before processing the transaction
       const timerId = setTimeout(async () => {
@@ -71,10 +70,11 @@ export async function connectToWebsocket(eventEmitter: any) {
 
         // Calculate the value of the transaction and build a message about it
         const value = await priceTransaction(enrichedTransaction);
-        const WHITELISTED_POOL_ADDRESS = "0x4ebdf703948ddcea3b11f675b4d1fba9d2414a14"; // TriCRV (crvUSDETHCRV)
+
+        const whitelistedAddresses = [crvUSDETHCRV, ...solverLabels.map((solver) => solver.Address.toLowerCase()), ...tricrypto_ng.map((address) => address.toLowerCase())];
 
         if (value) {
-          if (value < FILTER_VALUE && enrichedTransaction.poolAddress.toLowerCase() !== WHITELISTED_POOL_ADDRESS) {
+          if (value < FILTER_VALUE && !whitelistedAddresses.includes(enrichedTransaction.poolAddress.toLowerCase())) {
             return;
           }
           const message = await buildGeneralTransactionMessage(enrichedTransaction, value);

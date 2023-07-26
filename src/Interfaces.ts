@@ -30,4 +30,5 @@ export interface EnrichedTransactionDetail extends TransactionDetail {
   poolAddress: string;
   poolName: string;
   calledContractLabel: string;
+  from: string;
 }

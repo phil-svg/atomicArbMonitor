@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import { EventEmitter } from "events";
 import { labels } from "../../Labels.js";
 import { EnrichedTransactionDetail } from "../../Interfaces.js";
+import { solverLabels } from "../whitelisting/Whitelist.js";
 dotenv.config({ path: "../.env" });
 
 function getTokenURL(tokenAddress: string): string {
@@ -79,6 +80,12 @@ function getDollarAddOn(amountStr: any) {
   }
 }
 
+type SolverLookup = { [address: string]: string };
+const solverLookup: SolverLookup = solverLabels.reduce((acc: SolverLookup, solver) => {
+  acc[solver.Address.toLowerCase()] = solver.Label;
+  return acc;
+}, {});
+
 function hyperlink(link: string, name: string): string {
   return "<a href='" + link + "/'> " + name + "</a>";
 }
@@ -119,8 +126,8 @@ export async function buildGeneralTransactionMessage(enrichedTransaction: Enrich
   const POOL_URL_ETHERSCAN = getPoolURL(enrichedTransaction.poolAddress);
   const POOL = hyperlink(POOL_URL_ETHERSCAN, enrichedTransaction.poolName);
   const DOLLAR_ADDON = getDollarAddOn(value.toString());
-  const buyerURL = getBuyerURL(enrichedTransaction.trader);
-  const shortenBuyer = getAddressName(enrichedTransaction.trader);
+  const solverURL = getBuyerURL(enrichedTransaction.from);
+  let shortenSolver = getAddressName(enrichedTransaction.from);
   const LABEL_URL_ETHERSCAN = getPoolURL(enrichedTransaction.called_contract_by_user);
 
   const txHashUrl = getTxHashURLfromEtherscan(enrichedTransaction.tx_hash);
@@ -167,10 +174,24 @@ export async function buildGeneralTransactionMessage(enrichedTransaction: Enrich
     return null;
   }
 
+  let actorType = "User";
+  let actorURL = getBuyerURL(enrichedTransaction.trader);
+  let shortenActor = getAddressName(enrichedTransaction.trader);
+  let emoji = "🦙🦙🦙";
+
+  // check if the from address is a solver
+  let solverLabel = solverLookup[enrichedTransaction.from.toLowerCase()];
+  if (solverLabel) {
+    actorType = "Solver";
+    actorURL = getBuyerURL(enrichedTransaction.from);
+    shortenActor = solverLabel;
+    emoji = "🐮🐮🐮";
+  }
+
   return `
-  🚀${txType} ${transactedCoinInfo}${DOLLAR_ADDON}
+    🚀${txType} ${transactedCoinInfo}${DOLLAR_ADDON}
 Links:${POOL} |${hyperlink(txHashUrl, "etherscan.io")}
-User:${hyperlink(buyerURL, shortenBuyer)} called Contract:${hyperlink(LABEL_URL_ETHERSCAN, labelName)} 🦙🦙🦙
+${actorType}:${hyperlink(actorURL, shortenActor)} called Contract:${hyperlink(LABEL_URL_ETHERSCAN, labelName)} ${emoji}
   `;
 }
 

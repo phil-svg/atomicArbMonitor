@@ -1,6 +1,7 @@
 import TelegramBot from "node-telegram-bot-api";
 import dotenv from "dotenv";
 import { labels } from "../../Labels.js";
+import { solverLabels } from "../whitelisting/Whitelist.js";
 dotenv.config({ path: "../.env" });
 function getTokenURL(tokenAddress) {
     return "https://etherscan.io/token/" + tokenAddress;
@@ -78,6 +79,10 @@ function getDollarAddOn(amountStr) {
         return ` ($${amount.toFixed(2)})`;
     }
 }
+const solverLookup = solverLabels.reduce((acc, solver) => {
+    acc[solver.Address.toLowerCase()] = solver.Label;
+    return acc;
+}, {});
 function hyperlink(link, name) {
     return "<a href='" + link + "/'> " + name + "</a>";
 }
@@ -109,8 +114,8 @@ export async function buildGeneralTransactionMessage(enrichedTransaction, value)
     const POOL_URL_ETHERSCAN = getPoolURL(enrichedTransaction.poolAddress);
     const POOL = hyperlink(POOL_URL_ETHERSCAN, enrichedTransaction.poolName);
     const DOLLAR_ADDON = getDollarAddOn(value.toString());
-    const buyerURL = getBuyerURL(enrichedTransaction.trader);
-    const shortenBuyer = getAddressName(enrichedTransaction.trader);
+    const solverURL = getBuyerURL(enrichedTransaction.from);
+    let shortenSolver = getAddressName(enrichedTransaction.from);
     const LABEL_URL_ETHERSCAN = getPoolURL(enrichedTransaction.called_contract_by_user);
     const txHashUrl = getTxHashURLfromEtherscan(enrichedTransaction.tx_hash);
     let labelName = enrichedTransaction.calledContractLabel;
@@ -154,10 +159,22 @@ export async function buildGeneralTransactionMessage(enrichedTransaction, value)
     else {
         return null;
     }
+    let actorType = "User";
+    let actorURL = getBuyerURL(enrichedTransaction.trader);
+    let shortenActor = getAddressName(enrichedTransaction.trader);
+    let emoji = "🦙🦙🦙";
+    // check if the from address is a solver
+    let solverLabel = solverLookup[enrichedTransaction.from.toLowerCase()];
+    if (solverLabel) {
+        actorType = "Solver";
+        actorURL = getBuyerURL(enrichedTransaction.from);
+        shortenActor = solverLabel;
+        emoji = "🐮🐮🐮";
+    }
     return `
-  🚀${txType} ${transactedCoinInfo}${DOLLAR_ADDON}
+    🚀${txType} ${transactedCoinInfo}${DOLLAR_ADDON}
 Links:${POOL} |${hyperlink(txHashUrl, "etherscan.io")}
-User:${hyperlink(buyerURL, shortenBuyer)} called Contract:${hyperlink(LABEL_URL_ETHERSCAN, labelName)} 🦙🦙🦙
+${actorType}:${hyperlink(actorURL, shortenActor)} called Contract:${hyperlink(LABEL_URL_ETHERSCAN, labelName)} ${emoji}
   `;
 }
 export async function telegramBotMain(env, eventEmitter) {
