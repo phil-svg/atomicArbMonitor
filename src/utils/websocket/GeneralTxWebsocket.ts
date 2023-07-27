@@ -71,7 +71,7 @@ export async function connectToWebsocket(eventEmitter: any) {
         // Calculate the value of the transaction and build a message about it
         const value = await priceTransaction(enrichedTransaction);
 
-        const whitelistedAddresses = [crvUSDETHCRV, ...solverLabels.map((solver) => solver.Address.toLowerCase()), ...tricrypto_ng.map((address) => address.toLowerCase())];
+        const whitelistedAddresses = [crvUSDETHCRV, ...solverLabels.map((solver) => solver.Address.toLowerCase())];
 
         if (value) {
           if (value < FILTER_VALUE && !whitelistedAddresses.includes(enrichedTransaction.poolAddress.toLowerCase())) {
