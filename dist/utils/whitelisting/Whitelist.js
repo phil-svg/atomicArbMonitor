@@ -1,5 +1,3 @@
-// TriCRV (crvUSDETHCRV)
-export const crvUSDETHCRV = "0x4ebdf703948ddcea3b11f675b4d1fba9d2414a14";
 export const tricrypto_ng = ["0x7F86Bf177Dd4F3494b841a37e810A34dD56c829B", "0xf5f5B97624542D72A9E06f04804Bf81baA15e2B4"];
 // Cowswap
 export const solverLabels = [

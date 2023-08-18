@@ -3,7 +3,7 @@ import { buildGeneralTransactionMessage } from "../telegram/TelegramBot.js";
 import { io } from "socket.io-client";
 import { priceTransaction } from "../txValue/PriceTransaction.js";
 import { FILTER_VALUE } from "../../GeneralSwapMonitor.js";
-import { crvUSDETHCRV, solverLabels, tricrypto_ng } from "../whitelisting/Whitelist.js";
+import { solverLabels } from "../whitelisting/Whitelist.js";
 
 // const url = "http://localhost:443";
 const url = "wss://api.curvemonitor.com";
@@ -71,7 +71,7 @@ export async function connectToWebsocket(eventEmitter: any) {
         // Calculate the value of the transaction and build a message about it
         const value = await priceTransaction(enrichedTransaction);
 
-        const whitelistedAddresses = [crvUSDETHCRV, ...solverLabels.map((solver) => solver.Address.toLowerCase())];
+        const whitelistedAddresses = solverLabels.map((solver) => solver.Address.toLowerCase());
 
         if (value) {
           if (value < FILTER_VALUE && !whitelistedAddresses.includes(enrichedTransaction.poolAddress.toLowerCase())) {
