@@ -4,8 +4,8 @@ import { connectToWebsocket } from "./utils/websocket/GeneralTxWebsocket.js";
 
 console.clear();
 
-// const ENV = "prod";
-const ENV = "test";
+const ENV = "prod";
+// const ENV = "test";
 
 // export const url = "http://localhost:443";
 export const url = "wss://api.curvemonitor.com";
