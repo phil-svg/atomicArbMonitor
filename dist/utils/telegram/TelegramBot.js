@@ -2,6 +2,7 @@ import TelegramBot from "node-telegram-bot-api";
 import dotenv from "dotenv";
 import { labels } from "../../Labels.js";
 import { solverLabels } from "../whitelisting/Whitelist.js";
+import { lastSeenTxHash, lastSeenTxTimestamp } from "../websocket/GeneralTxWebsocket.js";
 dotenv.config({ path: "../.env" });
 function getTokenURL(tokenAddress) {
     return "https://etherscan.io/token/" + tokenAddress;
@@ -94,12 +95,14 @@ export function send(bot, message, groupID) {
         return;
     }
     bot.sendMessage(groupID, message, { parse_mode: "HTML", disable_web_page_preview: "true" });
-    // Track the message as sent
-    sentMessages[key] = true;
-    // Delete the message from tracking after 30 seconds
-    setTimeout(() => {
-        delete sentMessages[key];
-    }, 30000); // 30000 ms = 30 seconds
+    if (!message.startsWith("last seen")) {
+        // Track the message as sent
+        sentMessages[key] = true;
+        // Delete the message from tracking after 30 seconds
+        setTimeout(() => {
+            delete sentMessages[key];
+        }, 30000); // 30000 ms = 30 seconds
+    }
 }
 function shortenAddress(address) {
     return address.slice(0, 5) + ".." + address.slice(-2);
@@ -177,6 +180,26 @@ Links:${POOL} |${hyperlink(txHashUrl, "etherscan.io")}
 ${actorType}:${hyperlink(actorURL, shortenActor)} called Contract:${hyperlink(LABEL_URL_ETHERSCAN, labelName)} ${emoji}
   `;
 }
+function getTimeMessage() {
+    if (!lastSeenTxTimestamp)
+        return "never seen"; // If no transaction was seen
+    const differenceInSeconds = (new Date().getTime() - lastSeenTxTimestamp.getTime()) / 1000;
+    if (differenceInSeconds < 60) {
+        const seconds = Math.floor(differenceInSeconds);
+        return `${seconds} ${seconds === 1 ? "second" : "seconds"} ago`;
+    }
+    if (differenceInSeconds < 3600) {
+        const minutes = Math.floor(differenceInSeconds / 60);
+        return `${minutes} ${minutes === 1 ? "minute" : "minutes"} ago`;
+    }
+    const hours = Math.floor(differenceInSeconds / 3600);
+    return `${hours} ${hours === 1 ? "hour" : "hours"} ago`;
+}
+function getLastSeenMessage() {
+    const timeMessage = getTimeMessage();
+    const message = `last seen ${timeMessage} ser ➛${hyperlink(getTxHashURLfromEtherscan(lastSeenTxHash), "tx")}`;
+    return message;
+}
 export async function telegramBotMain(env, eventEmitter) {
     eventEmitter.on("newMessage", (message) => {
         if (groupID) {
@@ -199,6 +222,19 @@ export async function telegramBotMain(env, eventEmitter) {
             await new Promise((resolve) => setTimeout(resolve, 500));
             if (groupID) {
                 bot.sendMessage(msg.chat.id, "yes ser");
+            }
+        }
+        if (msg.text === "print last seen") {
+            await new Promise((resolve) => setTimeout(resolve, 500));
+            if (groupID) {
+                let message;
+                if (lastSeenTxHash === null || lastSeenTxHash === undefined) {
+                    message = "not seen ser";
+                }
+                else {
+                    message = getLastSeenMessage();
+                }
+                eventEmitter.emit("newMessage", message);
             }
         }
     });

@@ -1,11 +1,11 @@
 import { buildGeneralTransactionMessage } from "../telegram/TelegramBot.js";
 import { io } from "socket.io-client";
 import { priceTransaction } from "../txValue/PriceTransaction.js";
-import { FILTER_VALUE } from "../../GeneralSwapMonitor.js";
+import { FILTER_VALUE, url } from "../../GeneralSwapMonitor.js";
 import { solverLabels } from "../whitelisting/Whitelist.js";
-// const url = "http://localhost:443";
-const url = "wss://api.curvemonitor.com";
 const processedTxIds = new Set();
+export let lastSeenTxHash = null;
+export let lastSeenTxTimestamp = null;
 // Clear the cache every 5 minutes
 setInterval(() => {
     processedTxIds.clear();
@@ -38,6 +38,9 @@ export async function connectToWebsocket(eventEmitter) {
             });
         });
         mainSocket.on("NewGeneralTx", async (enrichedTransaction) => {
+            // Saving last-seen values, in case bot goes quite.
+            lastSeenTxHash = enrichedTransaction.tx_hash;
+            lastSeenTxTimestamp = new Date();
             console.log("enrichedTransaction", enrichedTransaction);
             // Check if the transaction has already been processed
             if (processedTxIds.has(enrichedTransaction.tx_id))
