@@ -4,8 +4,18 @@ import { priceTransaction } from "../txValue/PriceTransaction.js";
 import { FILTER_VALUE, url } from "../../GeneralSwapMonitor.js";
 import { solverLabels } from "../whitelisting/Whitelist.js";
 const processedTxIds = new Set();
-export let lastSeenTxHash = null;
-export let lastSeenTxTimestamp = null;
+import fs from "fs";
+import { promisify } from "util";
+// Promisify the necessary fs methods for easier async/await usage
+export const writeFileAsync = promisify(fs.writeFile);
+export const readFileAsync = promisify(fs.readFile);
+async function saveLastSeenToFile(hash, timestamp) {
+    const data = {
+        txHash: hash,
+        txTimestamp: timestamp.toISOString(),
+    };
+    await writeFileAsync("lastSeen.json", JSON.stringify(data, null, 2));
+}
 // Clear the cache every 5 minutes
 setInterval(() => {
     processedTxIds.clear();
@@ -39,8 +49,9 @@ export async function connectToWebsocket(eventEmitter) {
         });
         mainSocket.on("NewGeneralTx", async (enrichedTransaction) => {
             // Saving last-seen values, in case bot goes quite.
-            lastSeenTxHash = enrichedTransaction.tx_hash;
-            lastSeenTxTimestamp = new Date();
+            let lastSeenTxHash = enrichedTransaction.tx_hash;
+            let lastSeenTxTimestamp = new Date();
+            await saveLastSeenToFile(lastSeenTxHash, lastSeenTxTimestamp);
             console.log("enrichedTransaction", enrichedTransaction);
             // Check if the transaction has already been processed
             if (processedTxIds.has(enrichedTransaction.tx_id))

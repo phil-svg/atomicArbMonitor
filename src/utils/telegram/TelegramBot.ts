@@ -4,8 +4,21 @@ import { EventEmitter } from "events";
 import { labels } from "../../Labels.js";
 import { EnrichedTransactionDetail } from "../../Interfaces.js";
 import { solverLabels } from "../whitelisting/Whitelist.js";
-import { lastSeenTxHash, lastSeenTxTimestamp } from "../websocket/GeneralTxWebsocket.js";
+import { readFileAsync } from "../websocket/GeneralTxWebsocket.js";
 dotenv.config({ path: "../.env" });
+
+async function getLastSeenValues() {
+  try {
+    const data = JSON.parse(await readFileAsync("lastSeen.json", "utf-8"));
+    return {
+      txHash: data.txHash,
+      txTimestamp: new Date(data.txTimestamp),
+    };
+  } catch (error) {
+    console.error("Error reading last seen data from file:", error);
+    return null;
+  }
+}
 
 function getTokenURL(tokenAddress: string): string {
   return "https://etherscan.io/token/" + tokenAddress;
@@ -198,10 +211,10 @@ ${actorType}:${hyperlink(actorURL, shortenActor)} called Contract:${hyperlink(LA
   `;
 }
 
-function getTimeMessage(): string {
-  if (!lastSeenTxTimestamp) return "never seen"; // If no transaction was seen
+function getTimeMessage(timestamp: Date): string {
+  if (!timestamp) return "never seen"; // If no transaction was seen
 
-  const differenceInSeconds = (new Date().getTime() - lastSeenTxTimestamp.getTime()) / 1000;
+  const differenceInSeconds = (new Date().getTime() - timestamp.getTime()) / 1000;
 
   if (differenceInSeconds < 60) {
     const seconds = Math.floor(differenceInSeconds);
@@ -215,9 +228,9 @@ function getTimeMessage(): string {
   return `${hours} ${hours === 1 ? "hour" : "hours"} ago`;
 }
 
-function getLastSeenMessage() {
-  const timeMessage = getTimeMessage();
-  const message = `last seen ${timeMessage} ser ➛${hyperlink(getTxHashURLfromEtherscan(lastSeenTxHash!), "tx")}`;
+function getLastSeenMessage(txHash: string, timestamp: Date) {
+  const timeMessage = getTimeMessage(timestamp);
+  const message = `I've last seen a tx ${timeMessage} ser ➛${hyperlink(getTxHashURLfromEtherscan(txHash), "link")}`;
   return message;
 }
 
@@ -249,14 +262,17 @@ export async function telegramBotMain(env: string, eventEmitter: EventEmitter) {
         bot.sendMessage(msg.chat.id, "yes ser");
       }
     }
-    if (msg.text === "print last seen") {
+    if (msg.text.toLowerCase() === "print last seen") {
       await new Promise((resolve) => setTimeout(resolve, 500));
       if (groupID) {
         let message;
-        if (lastSeenTxHash === null || lastSeenTxHash === undefined) {
-          message = "not seen ser";
+
+        const lastSeenValues = await getLastSeenValues();
+
+        if (!lastSeenValues || !lastSeenValues.txHash) {
+          message = "dunno";
         } else {
-          message = getLastSeenMessage();
+          message = getLastSeenMessage(lastSeenValues.txHash, lastSeenValues.txTimestamp);
         }
         eventEmitter.emit("newMessage", message);
       }

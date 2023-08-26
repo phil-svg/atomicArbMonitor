@@ -7,8 +7,20 @@ import { solverLabels } from "../whitelisting/Whitelist.js";
 
 const processedTxIds = new Set();
 
-export let lastSeenTxHash: string | null = null;
-export let lastSeenTxTimestamp: Date | null = null;
+import fs from "fs";
+import { promisify } from "util";
+
+// Promisify the necessary fs methods for easier async/await usage
+export const writeFileAsync = promisify(fs.writeFile);
+export const readFileAsync = promisify(fs.readFile);
+
+async function saveLastSeenToFile(hash: string, timestamp: Date) {
+  const data = {
+    txHash: hash,
+    txTimestamp: timestamp.toISOString(),
+  };
+  await writeFileAsync("lastSeen.json", JSON.stringify(data, null, 2));
+}
 
 // Clear the cache every 5 minutes
 setInterval(() => {
@@ -48,8 +60,9 @@ export async function connectToWebsocket(eventEmitter: any) {
 
     mainSocket.on("NewGeneralTx", async (enrichedTransaction: EnrichedTransactionDetail) => {
       // Saving last-seen values, in case bot goes quite.
-      lastSeenTxHash = enrichedTransaction.tx_hash;
-      lastSeenTxTimestamp = new Date();
+      let lastSeenTxHash = enrichedTransaction.tx_hash;
+      let lastSeenTxTimestamp = new Date();
+      await saveLastSeenToFile(lastSeenTxHash, lastSeenTxTimestamp);
 
       console.log("enrichedTransaction", enrichedTransaction);
 
