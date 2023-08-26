@@ -230,7 +230,7 @@ function getTimeMessage(timestamp: Date): string {
 
 function getLastSeenMessage(txHash: string, timestamp: Date) {
   const timeMessage = getTimeMessage(timestamp);
-  const message = `I've last seen a tx ${timeMessage} ser ➛${hyperlink(getTxHashURLfromEtherscan(txHash), "link")}`;
+  const message = `I've last seen a${hyperlink(getTxHashURLfromEtherscan(txHash), "tx")} ${timeMessage} ser`;
   return message;
 }
 

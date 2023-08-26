@@ -210,7 +210,7 @@ function getTimeMessage(timestamp) {
 }
 function getLastSeenMessage(txHash, timestamp) {
     const timeMessage = getTimeMessage(timestamp);
-    const message = `I've last seen a tx ${timeMessage} ser ➛${hyperlink(getTxHashURLfromEtherscan(txHash), "link")}`;
+    const message = `I've last seen a${hyperlink(getTxHashURLfromEtherscan(txHash), "tx")} ${timeMessage} ser`;
     return message;
 }
 export async function telegramBotMain(env, eventEmitter) {
