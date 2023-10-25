@@ -1,14 +1,14 @@
 {
-  "name": "generalcurveswapmonitor",
+  "name": "atomicarbmonitor",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/GeneralSwapMonitor.js",
+  "main": "dist/AtomicArbMonitor.js",
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
-    "start": "cd dist && node GeneralSwapMonitor.js",
-    "code": "tsc && cd dist && node GeneralSwapMonitor.js"
+    "start": "cd dist && node AtomicArbMonitor.js",
+    "code": "tsc && cd dist && node AtomicArbMonitor.js"
   },
   "author": "phil",
   "license": "MIT",

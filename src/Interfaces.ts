@@ -32,3 +32,14 @@ export interface EnrichedTransactionDetail extends TransactionDetail {
   calledContractLabel: string;
   from: string;
 }
+
+export interface TransactionDetailsForAtomicArbs extends EnrichedTransactionDetail {
+  revenue: number | null;
+  gasInUsd: number;
+  gasInGwei: number | null;
+  netWin: number | null;
+  bribe: number | null;
+  totalCost: number | null;
+  blockBuilder: string | null;
+  validatorPayOffUSD: number | null;
+}
