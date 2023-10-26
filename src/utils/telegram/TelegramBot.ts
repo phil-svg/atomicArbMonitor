@@ -162,14 +162,14 @@ function getTxLinkLine(atomicArbDetails: TransactionDetailsForAtomicArbs): strin
 }
 
 function getSizeThingy(atomicArb: TransactionDetailsForAtomicArbs): string {
-  const netWin = atomicArb.netWin;
-  if (!netWin) return "";
+  const revenue = atomicArb.revenue;
+  if (!revenue) return "";
 
-  if (netWin < 15) {
+  if (revenue < 50) {
     return "smol";
-  } else if (netWin >= 10 && netWin <= 100) {
+  } else if (revenue <= 120) {
     return "medium";
-  } else if (netWin > 100) {
+  } else if (revenue > 120) {
     return "big";
   } else {
     return "";

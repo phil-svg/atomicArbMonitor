@@ -123,16 +123,16 @@ function getTxLinkLine(atomicArbDetails) {
     return `TxHash:${hyperlink(txHashUrlEtherscan, "etherscan.io")} |${hyperlink(txHashUrlEigenphi, "eigenphi.io")}`;
 }
 function getSizeThingy(atomicArb) {
-    const netWin = atomicArb.netWin;
-    if (!netWin)
+    const revenue = atomicArb.revenue;
+    if (!revenue)
         return "";
-    if (netWin < 15) {
+    if (revenue < 50) {
         return "smol";
     }
-    else if (netWin >= 10 && netWin <= 100) {
+    else if (revenue <= 120) {
         return "medium";
     }
-    else if (netWin > 100) {
+    else if (revenue > 120) {
         return "big";
     }
     else {
