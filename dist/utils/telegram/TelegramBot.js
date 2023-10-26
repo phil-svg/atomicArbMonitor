@@ -239,8 +239,7 @@ async function buildNetWinAndBribeMessage(atomicArbDetails) {
     return `${blockBuilderLine}
 ${validatorLine}
 ${botLinkLine}
-${txLinkLine}
- `;
+${txLinkLine}`;
 }
 async function buildNetWinButNoBribeMessage(atomicArbDetails) {
     const txLinkLine = getTxLinkLine(atomicArbDetails);
