@@ -176,7 +176,7 @@ function getHeader(atomicArbDetails: TransactionDetailsForAtomicArbs): string {
 
   const margin = Number((100 * (netWin / revenue)).toFixed(2));
 
-  if (revenue < 20) {
+  if (revenue < 30) {
     revenueSizeLabel = "smol";
   } else if (revenue < 100) {
     revenueSizeLabel = "medium";
