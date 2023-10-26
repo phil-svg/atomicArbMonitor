@@ -1,7 +1,5 @@
 import TelegramBot from "node-telegram-bot-api";
 import dotenv from "dotenv";
-import { labels } from "../../Labels.js";
-import { solverLabels } from "../whitelisting/Whitelist.js";
 dotenv.config({ path: "../.env" });
 function getTokenURL(tokenAddress) {
     return "https://etherscan.io/token/" + tokenAddress;
@@ -11,6 +9,9 @@ function getPoolURL(poolAddress) {
 }
 function getTxHashURLfromEtherscan(txHash) {
     return "https://etherscan.io/tx/" + txHash;
+}
+function getBotUrlEigenphi(address) {
+    return "https://eigenphi.io/mev/ethereum/contract/" + address;
 }
 function getTxHashURLfromEigenPhi(txHash) {
     return "https://eigenphi.io/mev/eigentx/" + txHash;
@@ -28,31 +29,6 @@ function formatForPrint(someNumber) {
         someNumber = Number(Number(someNumber).toFixed(2)).toLocaleString();
     }
     return someNumber;
-}
-function getShortenNumber(amountStr) {
-    let amount = parseFloat(amountStr.replace(/,/g, ""));
-    //amount = roundToNearest(amount);
-    if (amount >= 1000000) {
-        const millionAmount = amount / 1000000;
-        if (Number.isInteger(millionAmount)) {
-            return `${millionAmount.toFixed(0)}M`;
-        }
-        else {
-            return `${millionAmount.toFixed(2)}M`;
-        }
-    }
-    else if (amount >= 1000) {
-        const thousandAmount = amount / 1000;
-        if (Number.isInteger(thousandAmount)) {
-            return `${thousandAmount.toFixed(0)}k`;
-        }
-        else {
-            return `${thousandAmount.toFixed(1)}k`;
-        }
-    }
-    else {
-        return `${amount.toFixed(2)}`;
-    }
 }
 function getDollarAddOn(amountStr) {
     let amount = parseFloat(amountStr.replace(/,/g, ""));
@@ -79,10 +55,6 @@ function getDollarAddOn(amountStr) {
         return ` ($${amount.toFixed(2)})`;
     }
 }
-const solverLookup = solverLabels.reduce((acc, solver) => {
-    acc[solver.Address.toLowerCase()] = solver.Label;
-    return acc;
-}, {});
 function hyperlink(link, name) {
     return "<a href='" + link + "/'> " + name + "</a>";
 }
@@ -106,11 +78,8 @@ export function send(bot, message, groupID) {
 function shortenAddress(address) {
     return address.slice(0, 5) + ".." + address.slice(-2);
 }
-function getAddressName(address) {
-    // Find label for address
-    const labelObject = labels.find((label) => label.Address.toLowerCase() === address.toLowerCase());
-    // If label found, return it. Otherwise, return shortened address
-    return labelObject ? labelObject.Label : shortenAddress(address);
+function shortenAddressForMevBot(address) {
+    return address.slice(0, 6) + ".." + address.slice(-4);
 }
 export function getTransactionInfo(atomicArbDetails) {
     let txType = "";
@@ -141,35 +110,40 @@ export function getTransactionInfo(atomicArbDetails) {
     }
     return { txType, transactedCoinInfo };
 }
-function getUserLine(atomicArbDetails) {
-    let actorType = "User";
-    let actorURL = getAddressURL(atomicArbDetails.trader);
-    let shortenActor = getAddressName(atomicArbDetails.trader);
-    let emoji = "🦙🦙🦙";
-    // check if the from address is a solver
-    let solverLabel = solverLookup[atomicArbDetails.from.toLowerCase()];
-    if (solverLabel) {
-        actorType = "Solver";
-        actorURL = getAddressURL(atomicArbDetails.from);
-        shortenActor = solverLabel;
-        emoji = "🐮🐮🐮";
-    }
-    const LABEL_URL_ETHERSCAN = getPoolURL(atomicArbDetails.called_contract_by_user);
-    let labelName = atomicArbDetails.calledContractLabel;
-    if (labelName.startsWith("0x") && labelName.length === 42) {
-        labelName = shortenAddress(labelName);
-    }
-    return `${actorType}:${hyperlink(actorURL, shortenActor)} called Contract:${hyperlink(LABEL_URL_ETHERSCAN, labelName)} ${emoji}`;
+function getBotLinkLine(atomicArbDetails) {
+    const botAddress = atomicArbDetails.called_contract_by_user;
+    const botUrlEigenphi = getBotUrlEigenphi(botAddress);
+    const botUrlEtherscan = getAddressURL(botAddress);
+    const shortenedBotAddress = shortenAddressForMevBot(botAddress);
+    return `Bot ${shortenedBotAddress}:${hyperlink(botUrlEtherscan, "etherscan.io")} |${hyperlink(botUrlEigenphi, "eigenphi.io")}`;
 }
 function getTxLinkLine(atomicArbDetails) {
     const txHashUrlEtherscan = getTxHashURLfromEtherscan(atomicArbDetails.tx_hash);
     const txHashUrlEigenphi = getTxHashURLfromEigenPhi(atomicArbDetails.tx_hash);
-    return `Links:${hyperlink(txHashUrlEtherscan, "etherscan.io")} |${hyperlink(txHashUrlEigenphi, "eigenphi.io")}`;
+    return `TxHash:${hyperlink(txHashUrlEtherscan, "etherscan.io")} |${hyperlink(txHashUrlEigenphi, "eigenphi.io")}`;
+}
+function getSizeThingy(atomicArb) {
+    const netWin = atomicArb.netWin;
+    if (!netWin)
+        return "";
+    if (netWin < 15) {
+        return "smol";
+    }
+    else if (netWin >= 10 && netWin <= 100) {
+        return "medium";
+    }
+    else if (netWin > 100) {
+        return "big";
+    }
+    else {
+        return "";
+    }
 }
 function getHeader(atomicArbDetails) {
     const POOL_URL_ETHERSCAN = getPoolURL(atomicArbDetails.poolAddress);
     const POOL = hyperlink(POOL_URL_ETHERSCAN, atomicArbDetails.poolName);
-    return `⚖️ Atomic Arbitrage spotted in${POOL}`;
+    const sizeThingy = getSizeThingy(atomicArbDetails);
+    return `⚖️ ${sizeThingy} arb spotted in${POOL}`;
 }
 function getProfitRevCostLine(atomicArbDetails) {
     let margin;
@@ -261,18 +235,18 @@ async function buildNetWinAndBribeMessage(atomicArbDetails) {
         return null;
     const validatorLine = getValidatorLine(atomicArbDetails);
     const txLinkLine = getTxLinkLine(atomicArbDetails);
+    const botLinkLine = getBotLinkLine(atomicArbDetails);
     return `${blockBuilderLine}
 ${validatorLine}
+${botLinkLine}
 ${txLinkLine}
  `;
 }
 async function buildNetWinButNoBribeMessage(atomicArbDetails) {
     const txLinkLine = getTxLinkLine(atomicArbDetails);
-    return `${txLinkLine}`;
-}
-async function buildSuperShortAtomicArbMessage(atomicArbDetails) {
-    const txLinkLine = getTxLinkLine(atomicArbDetails);
-    return `${txLinkLine}`;
+    const botLinkLine = getBotLinkLine(atomicArbDetails);
+    return `${botLinkLine}
+${txLinkLine}`;
 }
 export async function buildAtomicArbMessage(atomicArbDetails, value) {
     const header = getHeader(atomicArbDetails);
@@ -288,14 +262,10 @@ export async function buildAtomicArbMessage(atomicArbDetails, value) {
     if (netWin && !bribe) {
         detailedEnding = await buildNetWinButNoBribeMessage(atomicArbDetails);
     }
-    else if (netWin && bribe) {
+    else {
         detailedEnding = await buildNetWinAndBribeMessage(atomicArbDetails);
     }
-    else {
-        detailedEnding = await buildSuperShortAtomicArbMessage(atomicArbDetails);
-    }
     return `
-
 ${header}
 
 ${txType} ${transactedCoinInfo}${DOLLAR_ADDON}
@@ -303,6 +273,7 @@ ${txType} ${transactedCoinInfo}${DOLLAR_ADDON}
 ${profitRevCostLine}
 ${positionGasBribeLine}
 ${detailedEnding}
+_____________________________
 `;
 }
 export async function telegramBotMain(env, eventEmitter) {
