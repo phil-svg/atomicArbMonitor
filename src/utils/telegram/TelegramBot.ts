@@ -93,7 +93,7 @@ function shortenAddress(address: string): string {
 }
 
 function shortenAddressForMevBot(address: string): string {
-  return address.slice(0, 6) + ".." + address.slice(-4);
+  return address.slice(0, 6) + ".." + address.slice(-3);
 }
 
 type CoinDetail = {
@@ -180,7 +180,7 @@ function getHeader(atomicArbDetails: TransactionDetailsForAtomicArbs): string {
   const POOL_URL_ETHERSCAN = getPoolURL(atomicArbDetails.poolAddress);
   const POOL = hyperlink(POOL_URL_ETHERSCAN, atomicArbDetails.poolName);
   const sizeThingy = getSizeThingy(atomicArbDetails);
-  return `⚖️ ${sizeThingy} arb spotted in${POOL}`;
+  return `⚖️ ${sizeThingy} arb in${POOL}`;
 }
 
 function getProfitRevCostLine(atomicArbDetails: TransactionDetailsForAtomicArbs): string {

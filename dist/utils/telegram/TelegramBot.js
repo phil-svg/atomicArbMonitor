@@ -79,7 +79,7 @@ function shortenAddress(address) {
     return address.slice(0, 5) + ".." + address.slice(-2);
 }
 function shortenAddressForMevBot(address) {
-    return address.slice(0, 6) + ".." + address.slice(-4);
+    return address.slice(0, 6) + ".." + address.slice(-3);
 }
 export function getTransactionInfo(atomicArbDetails) {
     let txType = "";
@@ -143,7 +143,7 @@ function getHeader(atomicArbDetails) {
     const POOL_URL_ETHERSCAN = getPoolURL(atomicArbDetails.poolAddress);
     const POOL = hyperlink(POOL_URL_ETHERSCAN, atomicArbDetails.poolName);
     const sizeThingy = getSizeThingy(atomicArbDetails);
-    return `⚖️ ${sizeThingy} arb spotted in${POOL}`;
+    return `⚖️ ${sizeThingy} arb in${POOL}`;
 }
 function getProfitRevCostLine(atomicArbDetails) {
     let margin;
