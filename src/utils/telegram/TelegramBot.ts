@@ -165,9 +165,37 @@ function getHeader(atomicArbDetails: TransactionDetailsForAtomicArbs): string {
   const POOL_URL_ETHERSCAN = getPoolURL(atomicArbDetails.poolAddress);
   const POOL = hyperlink(POOL_URL_ETHERSCAN, atomicArbDetails.poolName);
   const revenue = atomicArbDetails.revenue;
+  const netWin = atomicArbDetails.netWin;
+
   if (!revenue) return `⚖️ atomic arb in${POOL}`;
+  if (!netWin) return `⚖️ atomic arb in${POOL}`;
+  if (!netWin) return `⚖️ atomic arb in${POOL}`;
+
+  let marginSizeLabel;
+  let revenueSizeLabel;
+
+  const margin = Number((100 * (netWin / revenue)).toFixed(2));
+
+  if (revenue < 20) {
+    revenueSizeLabel = "smol";
+  } else if (revenue < 100) {
+    revenueSizeLabel = "medium";
+  } else {
+    revenueSizeLabel = "big";
+  }
+
+  if (margin < 5) {
+    marginSizeLabel = "smol";
+  } else if (margin < 25) {
+    marginSizeLabel = "medium";
+  } else {
+    marginSizeLabel = "big";
+  }
+
+  const labelForCtrlF = `(margin: ${marginSizeLabel}, revenue: ${revenueSizeLabel})`;
+
   const formattedRevenue = revenue.toFixed(0).toLocaleString();
-  return `⚖️ ${formattedRevenue}$ atomic arb in${POOL}`;
+  return `⚖️ ${formattedRevenue}$ atomic arb in${POOL} ${labelForCtrlF}`;
 }
 
 function getProfitRevCostLine(atomicArbDetails: TransactionDetailsForAtomicArbs): string {
