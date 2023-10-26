@@ -161,26 +161,13 @@ function getTxLinkLine(atomicArbDetails: TransactionDetailsForAtomicArbs): strin
   return `TxHash:${hyperlink(txHashUrlEtherscan, "etherscan.io")} |${hyperlink(txHashUrlEigenphi, "eigenphi.io")}`;
 }
 
-function getSizeThingy(atomicArb: TransactionDetailsForAtomicArbs): string {
-  const revenue = atomicArb.revenue;
-  if (!revenue) return "";
-
-  if (revenue < 50) {
-    return "smol";
-  } else if (revenue <= 120) {
-    return "medium";
-  } else if (revenue > 120) {
-    return "big";
-  } else {
-    return "";
-  }
-}
-
 function getHeader(atomicArbDetails: TransactionDetailsForAtomicArbs): string {
   const POOL_URL_ETHERSCAN = getPoolURL(atomicArbDetails.poolAddress);
   const POOL = hyperlink(POOL_URL_ETHERSCAN, atomicArbDetails.poolName);
-  const sizeThingy = getSizeThingy(atomicArbDetails);
-  return `⚖️ ${sizeThingy} arb in${POOL}`;
+  const revenue = atomicArbDetails.revenue;
+  if (!revenue) return `⚖️ atomic arb in${POOL}`;
+  const formattedRevenue = revenue.toFixed(0).toLocaleString();
+  return `⚖️ ${formattedRevenue}$ atomic arb in${POOL}`;
 }
 
 function getProfitRevCostLine(atomicArbDetails: TransactionDetailsForAtomicArbs): string {
