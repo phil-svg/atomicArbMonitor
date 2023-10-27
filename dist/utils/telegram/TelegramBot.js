@@ -154,6 +154,8 @@ function getHeader(atomicArbDetails) {
     else {
         marginSizeLabel = "big";
     }
+    if (revenueSizeLabel === "smol" && marginSizeLabel === "smol")
+        return "filter smol stuff";
     const labelForCtrlF = `(margin: ${marginSizeLabel}, revenue: ${revenueSizeLabel})`;
     const formattedRevenue = revenue.toFixed(0).toLocaleString();
     return `⚖️ ${formattedRevenue}$ atomic arb in${POOL} ${labelForCtrlF}`;
@@ -262,6 +264,8 @@ ${txLinkLine}`;
 }
 export async function buildAtomicArbMessage(atomicArbDetails, value) {
     const header = getHeader(atomicArbDetails);
+    if (header === "filter smol stuff")
+        return null;
     const DOLLAR_ADDON = getDollarAddOn(value.toString());
     const transactionInfo = getTransactionInfo(atomicArbDetails);
     if (!transactionInfo)

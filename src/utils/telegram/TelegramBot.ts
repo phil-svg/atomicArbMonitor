@@ -192,6 +192,8 @@ function getHeader(atomicArbDetails: TransactionDetailsForAtomicArbs): string {
     marginSizeLabel = "big";
   }
 
+  if (revenueSizeLabel === "smol" && marginSizeLabel === "smol") return "filter smol stuff";
+
   const labelForCtrlF = `(margin: ${marginSizeLabel}, revenue: ${revenueSizeLabel})`;
 
   const formattedRevenue = revenue.toFixed(0).toLocaleString();
@@ -307,6 +309,7 @@ ${txLinkLine}`;
 
 export async function buildAtomicArbMessage(atomicArbDetails: TransactionDetailsForAtomicArbs, value: number): Promise<string | null> {
   const header = getHeader(atomicArbDetails);
+  if (header === "filter smol stuff") return null;
 
   const DOLLAR_ADDON = getDollarAddOn(value.toString());
 
