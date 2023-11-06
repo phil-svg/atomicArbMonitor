@@ -258,17 +258,13 @@ async function buildNetWinAndBribeMessage(atomicArbDetails) {
         return null;
     const validatorLine = getValidatorLine(atomicArbDetails);
     const txLinkLine = getTxLinkLine(atomicArbDetails);
-    const botLinkLine = getBotLinkLine(atomicArbDetails);
     return `${blockBuilderLine}
 ${validatorLine}
-${botLinkLine}
 ${txLinkLine}`;
 }
 async function buildNetWinButNoBribeMessage(atomicArbDetails) {
     const txLinkLine = getTxLinkLine(atomicArbDetails);
-    const botLinkLine = getBotLinkLine(atomicArbDetails);
-    return `${botLinkLine}
-${txLinkLine}`;
+    return `${txLinkLine}`;
 }
 export async function buildAtomicArbMessage(atomicArbDetails, value) {
     const header = getHeader(atomicArbDetails);
@@ -293,7 +289,6 @@ ${header}
 ${profitRevCostLine}
 ${positionGasBribeLine}
 ${detailedEnding}
-_____________________________
 `;
 }
 export async function telegramBotMain(env, eventEmitter) {
