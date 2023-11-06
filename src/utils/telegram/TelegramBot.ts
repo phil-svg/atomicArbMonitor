@@ -298,20 +298,16 @@ async function buildNetWinAndBribeMessage(atomicArbDetails: TransactionDetailsFo
 
   const validatorLine = getValidatorLine(atomicArbDetails);
   const txLinkLine = getTxLinkLine(atomicArbDetails);
-  const botLinkLine = getBotLinkLine(atomicArbDetails);
 
   return `${blockBuilderLine}
 ${validatorLine}
-${botLinkLine}
 ${txLinkLine}`;
 }
 
 async function buildNetWinButNoBribeMessage(atomicArbDetails: TransactionDetailsForAtomicArbs): Promise<string> {
   const txLinkLine = getTxLinkLine(atomicArbDetails);
-  const botLinkLine = getBotLinkLine(atomicArbDetails);
 
-  return `${botLinkLine}
-${txLinkLine}`;
+  return `${txLinkLine}`;
 }
 
 export async function buildAtomicArbMessage(atomicArbDetails: TransactionDetailsForAtomicArbs, value: number): Promise<string | null> {
@@ -340,7 +336,6 @@ ${header}
 ${profitRevCostLine}
 ${positionGasBribeLine}
 ${detailedEnding}
-_____________________________
 `;
 }
 
