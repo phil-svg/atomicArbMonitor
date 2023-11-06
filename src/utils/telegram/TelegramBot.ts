@@ -176,9 +176,9 @@ function getHeader(atomicArbDetails: TransactionDetailsForAtomicArbs): string {
 
   const margin = Number((100 * (netWin / revenue)).toFixed(2));
 
-  if (revenue < 30) {
+  if (revenue < 50) {
     revenueSizeLabel = "smol";
-  } else if (revenue < 100) {
+  } else if (revenue < 200) {
     revenueSizeLabel = "medium";
   } else {
     revenueSizeLabel = "big";
@@ -192,7 +192,8 @@ function getHeader(atomicArbDetails: TransactionDetailsForAtomicArbs): string {
     marginSizeLabel = "big";
   }
 
-  if (revenueSizeLabel === "smol" && marginSizeLabel === "smol") return "filter smol stuff";
+  if (revenueSizeLabel === "smol") return "filter smol stuff";
+  if (marginSizeLabel === "smol" && revenueSizeLabel === "smol") return "filter smol stuff";
 
   const labelForCtrlF = `(margin: ${marginSizeLabel}, revenue: ${revenueSizeLabel})`;
 
@@ -247,7 +248,13 @@ function getPositionGasBribeLine(atomicArbDetails: TransactionDetailsForAtomicAr
   } else {
     bribe = "unknown";
   }
-  const positionGasBribeLine = `Position: ${positionInBlock} | Gas: ${gweiAmount} Gwei | Bribe: ${bribe}`;
+
+  let positionGasBribeLine;
+  if (bribe === "none") {
+    positionGasBribeLine = `Position: ${positionInBlock} | Gas: ${gweiAmount} Gwei`;
+  } else {
+    positionGasBribeLine = `Position: ${positionInBlock} | Gas: ${gweiAmount} Gwei | Bribe: ${bribe}`;
+  }
   return positionGasBribeLine;
 }
 
@@ -311,12 +318,9 @@ export async function buildAtomicArbMessage(atomicArbDetails: TransactionDetails
   const header = getHeader(atomicArbDetails);
   if (header === "filter smol stuff") return null;
 
-  const DOLLAR_ADDON = getDollarAddOn(value.toString());
-
   const transactionInfo = getTransactionInfo(atomicArbDetails);
 
   if (!transactionInfo) return null;
-  let { txType, transactedCoinInfo } = transactionInfo;
 
   const profitRevCostLine = getProfitRevCostLine(atomicArbDetails);
   const positionGasBribeLine = getPositionGasBribeLine(atomicArbDetails);
@@ -332,8 +336,6 @@ export async function buildAtomicArbMessage(atomicArbDetails: TransactionDetails
 
   return `
 ${header}
-
-${txType} ${transactedCoinInfo}${DOLLAR_ADDON}
 
 ${profitRevCostLine}
 ${positionGasBribeLine}
