@@ -4,6 +4,7 @@ import { EventEmitter } from "events";
 import { labels } from "../../Labels.js";
 import { TransactionDetailsForAtomicArbs } from "../../Interfaces.js";
 import { solverLabels } from "../whitelisting/Whitelist.js";
+import { lstat } from "fs";
 dotenv.config({ path: "../.env" });
 
 function getTokenURL(tokenAddress: string): string {
@@ -296,12 +297,17 @@ async function buildNetWinAndBribeMessage(atomicArbDetails: TransactionDetailsFo
   const blockBuilderLine = getBlockBuilderLine(atomicArbDetails);
   if (!blockBuilderLine) return null;
 
-  const validatorLine = getValidatorLine(atomicArbDetails);
   const txLinkLine = getTxLinkLine(atomicArbDetails);
 
-  return `${blockBuilderLine}
-${validatorLine}
-${txLinkLine}`;
+  if (atomicArbDetails.validatorPayOffUSD && atomicArbDetails.validatorPayOffUSD > 2000) {
+    const validatorLine = getValidatorLine(atomicArbDetails);
+    return `${blockBuilderLine}
+  ${validatorLine}
+  ${txLinkLine}`;
+  } else {
+    return `${blockBuilderLine}
+  ${txLinkLine}`;
+  }
 }
 
 async function buildNetWinButNoBribeMessage(atomicArbDetails: TransactionDetailsForAtomicArbs): Promise<string> {

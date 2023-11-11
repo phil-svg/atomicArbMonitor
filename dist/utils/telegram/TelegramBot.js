@@ -256,11 +256,17 @@ async function buildNetWinAndBribeMessage(atomicArbDetails) {
     const blockBuilderLine = getBlockBuilderLine(atomicArbDetails);
     if (!blockBuilderLine)
         return null;
-    const validatorLine = getValidatorLine(atomicArbDetails);
     const txLinkLine = getTxLinkLine(atomicArbDetails);
-    return `${blockBuilderLine}
-${validatorLine}
-${txLinkLine}`;
+    if (atomicArbDetails.validatorPayOffUSD && atomicArbDetails.validatorPayOffUSD > 2000) {
+        const validatorLine = getValidatorLine(atomicArbDetails);
+        return `${blockBuilderLine}
+  ${validatorLine}
+  ${txLinkLine}`;
+    }
+    else {
+        return `${blockBuilderLine}
+  ${txLinkLine}`;
+    }
 }
 async function buildNetWinButNoBribeMessage(atomicArbDetails) {
     const txLinkLine = getTxLinkLine(atomicArbDetails);
