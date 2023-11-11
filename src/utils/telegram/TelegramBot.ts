@@ -303,10 +303,10 @@ async function buildNetWinAndBribeMessage(atomicArbDetails: TransactionDetailsFo
     const validatorLine = getValidatorLine(atomicArbDetails);
     return `${blockBuilderLine}
   ${validatorLine}
-  ${txLinkLine}`;
+${txLinkLine}`;
   } else {
     return `${blockBuilderLine}
-  ${txLinkLine}`;
+${txLinkLine}`;
   }
 }
 
