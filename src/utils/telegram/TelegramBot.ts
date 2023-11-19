@@ -1,10 +1,7 @@
 import TelegramBot from "node-telegram-bot-api";
 import dotenv from "dotenv";
 import { EventEmitter } from "events";
-import { labels } from "../../Labels.js";
 import { TransactionDetailsForAtomicArbs } from "../../Interfaces.js";
-import { solverLabels } from "../whitelisting/Whitelist.js";
-import { lstat } from "fs";
 dotenv.config({ path: "../.env" });
 
 function getTokenURL(tokenAddress: string): string {
@@ -39,28 +36,6 @@ function formatForPrint(someNumber: any) {
     someNumber = Number(Number(someNumber).toFixed(2)).toLocaleString();
   }
   return someNumber;
-}
-
-function getDollarAddOn(amountStr: any) {
-  let amount = parseFloat(amountStr.replace(/,/g, ""));
-  //amount = roundToNearest(amount);
-  if (amount >= 1000000) {
-    const millionAmount = amount / 1000000;
-    if (Number.isInteger(millionAmount)) {
-      return ` ($${millionAmount.toFixed(0)}M)`;
-    } else {
-      return ` ($${millionAmount.toFixed(2)}M)`;
-    }
-  } else if (amount >= 1000) {
-    const thousandAmount = amount / 1000;
-    if (Number.isInteger(thousandAmount)) {
-      return ` ($${thousandAmount.toFixed(0)}k)`;
-    } else {
-      return ` ($${thousandAmount.toFixed(1)}k)`;
-    }
-  } else {
-    return ` ($${amount.toFixed(2)})`;
-  }
 }
 
 function hyperlink(link: string, name: string): string {
@@ -170,7 +145,6 @@ function getHeader(atomicArbDetails: TransactionDetailsForAtomicArbs): string {
 
   if (!revenue) return `⚖️ atomic arb in${POOL}`;
   if (!netWin) return `⚖️ atomic arb in${POOL}`;
-  if (!netWin) return `⚖️ atomic arb in${POOL}`;
 
   let marginSizeLabel;
   let revenueSizeLabel;
@@ -198,7 +172,7 @@ function getHeader(atomicArbDetails: TransactionDetailsForAtomicArbs): string {
 
   const labelForCtrlF = `(margin: ${marginSizeLabel}, revenue: ${revenueSizeLabel})`;
 
-  const formattedRevenue = revenue.toFixed(0).toLocaleString();
+  const formattedRevenue = formatForPrint(revenue);
   return `⚖️ ${formattedRevenue}$ atomic arb in${POOL} ${labelForCtrlF}`;
 }
 

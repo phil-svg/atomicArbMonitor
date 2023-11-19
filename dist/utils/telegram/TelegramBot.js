@@ -30,31 +30,6 @@ function formatForPrint(someNumber) {
     }
     return someNumber;
 }
-function getDollarAddOn(amountStr) {
-    let amount = parseFloat(amountStr.replace(/,/g, ""));
-    //amount = roundToNearest(amount);
-    if (amount >= 1000000) {
-        const millionAmount = amount / 1000000;
-        if (Number.isInteger(millionAmount)) {
-            return ` ($${millionAmount.toFixed(0)}M)`;
-        }
-        else {
-            return ` ($${millionAmount.toFixed(2)}M)`;
-        }
-    }
-    else if (amount >= 1000) {
-        const thousandAmount = amount / 1000;
-        if (Number.isInteger(thousandAmount)) {
-            return ` ($${thousandAmount.toFixed(0)}k)`;
-        }
-        else {
-            return ` ($${thousandAmount.toFixed(1)}k)`;
-        }
-    }
-    else {
-        return ` ($${amount.toFixed(2)})`;
-    }
-}
 function hyperlink(link, name) {
     return "<a href='" + link + "/'> " + name + "</a>";
 }
@@ -131,8 +106,6 @@ function getHeader(atomicArbDetails) {
         return `⚖️ atomic arb in${POOL}`;
     if (!netWin)
         return `⚖️ atomic arb in${POOL}`;
-    if (!netWin)
-        return `⚖️ atomic arb in${POOL}`;
     let marginSizeLabel;
     let revenueSizeLabel;
     const margin = Number((100 * (netWin / revenue)).toFixed(2));
@@ -159,7 +132,7 @@ function getHeader(atomicArbDetails) {
     if (marginSizeLabel === "smol" && revenueSizeLabel === "smol")
         return "filter smol stuff";
     const labelForCtrlF = `(margin: ${marginSizeLabel}, revenue: ${revenueSizeLabel})`;
-    const formattedRevenue = revenue.toFixed(0).toLocaleString();
+    const formattedRevenue = formatForPrint(revenue);
     return `⚖️ ${formattedRevenue}$ atomic arb in${POOL} ${labelForCtrlF}`;
 }
 function getProfitRevCostLine(atomicArbDetails) {
