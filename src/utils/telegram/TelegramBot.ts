@@ -302,7 +302,7 @@ async function buildNetWinAndBribeMessage(atomicArbDetails: TransactionDetailsFo
   if (atomicArbDetails.validatorPayOffUSD && atomicArbDetails.validatorPayOffUSD > 2000) {
     const validatorLine = getValidatorLine(atomicArbDetails);
     return `${blockBuilderLine}
-  ${validatorLine}
+${validatorLine}
 ${txLinkLine}`;
   } else {
     return `${blockBuilderLine}
