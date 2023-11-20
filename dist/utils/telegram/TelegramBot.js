@@ -132,7 +132,7 @@ function getHeader(atomicArbDetails) {
     if (marginSizeLabel === "smol" && revenueSizeLabel === "smol")
         return "filter smol stuff";
     const labelForCtrlF = `(margin: ${marginSizeLabel}, revenue: ${revenueSizeLabel})`;
-    const formattedRevenue = formatForPrint(revenue);
+    const formattedRevenue = Number(Number(revenue).toFixed(0)).toLocaleString();
     return `⚖️ ${formattedRevenue}$ atomic arb in${POOL} ${labelForCtrlF}`;
 }
 function getProfitRevCostLine(atomicArbDetails) {

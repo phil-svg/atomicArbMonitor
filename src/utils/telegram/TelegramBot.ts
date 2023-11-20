@@ -172,7 +172,8 @@ function getHeader(atomicArbDetails: TransactionDetailsForAtomicArbs): string {
 
   const labelForCtrlF = `(margin: ${marginSizeLabel}, revenue: ${revenueSizeLabel})`;
 
-  const formattedRevenue = formatForPrint(revenue);
+  const formattedRevenue = Number(Number(revenue).toFixed(0)).toLocaleString();
+
   return `⚖️ ${formattedRevenue}$ atomic arb in${POOL} ${labelForCtrlF}`;
 }
 
