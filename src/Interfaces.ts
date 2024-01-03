@@ -43,3 +43,29 @@ export interface TransactionDetailsForAtomicArbs extends EnrichedTransactionDeta
   blockBuilder: string | null;
   validatorPayOffUSD: number | null;
 }
+
+export interface Trade {
+  id: number;
+  price: string;
+  qty: string;
+  quoteQty: string;
+  time: number;
+  isBuyerMaker: boolean;
+  isBestMatch: boolean;
+}
+
+export type AtomicArbDetailType = {
+  transaction_type: "swap" | "remove" | "deposit" | string;
+  coins_leaving_wallet: CoinDetail[];
+  coins_entering_wallet: CoinDetail[];
+};
+
+export interface EnrichedCexDexDetails extends EnrichedTransactionDetail {
+  builder: string;
+  blockPayoutETH: number;
+  blockPayoutUSD: number;
+  eoaNonce: number;
+  gasInGwei: number;
+  gasCostUSD: number;
+  bribeInUSD: number;
+}

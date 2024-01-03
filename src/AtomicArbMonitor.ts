@@ -10,9 +10,6 @@ const ENV = "prod";
 // export const url = "http://localhost:443";
 export const url = "wss://api.curvemonitor.com";
 
-// export const FILTER_VALUE = 1000000;
-export const FILTER_VALUE = 0;
-
 const eventEmitter = new EventEmitter();
 
 async function main() {
